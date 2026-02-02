@@ -1,0 +1,9 @@
+{
+  "toolName": "input.type",
+  "rateLimits": {
+    "maxCallsPerSecond": 5,
+    "burstAllowance": 3
+  },
+  "timeoutMs": 5000,
+  "preHook": "screenshot_focus"
+}

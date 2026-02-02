@@ -1,0 +1,11 @@
+{
+  "toolName": "file.write",
+  "retryPolicy": {
+    "maxRetries": 1,
+    "backoff": "linear",
+    "baseDelayMs": 300,
+    "retryableErrors": ["FILE_IN_USE"]
+  },
+  "timeoutMs": 15000,
+  "postHook": "verify_exists"
+}

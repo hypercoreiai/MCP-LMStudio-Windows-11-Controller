@@ -1,0 +1,8 @@
+{
+  "toolName": "display.screenshot",
+  "timeoutMs": 15000,
+  "rateLimits": {
+    "maxCallsPerSecond": 2,
+    "burstAllowance": 1
+  }
+}

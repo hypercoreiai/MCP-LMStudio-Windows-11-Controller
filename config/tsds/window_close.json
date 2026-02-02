@@ -1,0 +1,11 @@
+{
+  "toolName": "window.close",
+  "retryPolicy": {
+    "maxRetries": 2,
+    "backoff": "exponential",
+    "baseDelayMs": 1000,
+    "retryableErrors": ["STILL_ACTIVE"]
+  },
+  "timeoutMs": 8000,
+  "preHook": "screenshot_focus"
+}

@@ -1,0 +1,16 @@
+{
+  "_comment": "Session-level defaults. CLI flags override these values.",
+
+  "transportMode": "stdio",
+  "port": 3000,
+
+  "_comment_model": "Set to true if your LLM emits <tool_call> tags natively. Set to false to force the text parser. Omit (or set to null) for hybrid auto-detect (recommended).",
+  "modelSupportsToolCallTags": null,
+
+  "_comment_elevation": "If true, tools in the whitelist below skip the per-call UAC prompt. WARNING: only whitelist tools you trust to run as admin.",
+  "elevationPreApproved": false,
+  "elevationWhitelist": [],
+
+  "logLevel": "info",
+  "auditLogPath": "audit.log"
+}

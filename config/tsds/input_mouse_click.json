@@ -1,0 +1,9 @@
+{
+  "toolName": "input.mouse_click",
+  "rateLimits": {
+    "maxCallsPerSecond": 10,
+    "burstAllowance": 5
+  },
+  "timeoutMs": 3000,
+  "preHook": "screenshot_focus"
+}

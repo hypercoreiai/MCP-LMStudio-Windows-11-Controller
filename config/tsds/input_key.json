@@ -1,0 +1,8 @@
+{
+  "toolName": "input.key",
+  "rateLimits": {
+    "maxCallsPerSecond": 8,
+    "burstAllowance": 4
+  },
+  "timeoutMs": 3000
+}

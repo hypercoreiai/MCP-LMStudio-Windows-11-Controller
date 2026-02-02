@@ -1,0 +1,5 @@
+{
+  "toolName": "process.start",
+  "timeoutMs": 10000,
+  "postHook": "poll_for_window"
+}

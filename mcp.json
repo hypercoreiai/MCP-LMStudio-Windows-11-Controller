@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "win11-desktop": {
+      "command": "node",
+      "args": [
+        "dist/core/server.js",
+        "--transport",
+        "stdio"
+      ],
+      "cwd": "F:\\win_11",
+      "env": {},
+      "disabled": false
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "toolName": "registry.write",
+  "requiresElevation": true,
+  "retryPolicy": {
+    "maxRetries": 1,
+    "backoff": "linear",
+    "baseDelayMs": 500,
+    "retryableErrors": ["ACCESS_DENIED"]
+  },
+  "timeoutMs": 8000,
+  "preHook": "backup_target"
+}

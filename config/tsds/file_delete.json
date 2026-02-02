@@ -1,0 +1,13 @@
+{
+  "toolName": "file.delete",
+  "retryPolicy": {
+    "maxRetries": 2,
+    "backoff": "exponential",
+    "baseDelayMs": 500,
+    "retryableErrors": ["ACCESS_DENIED", "FILE_IN_USE"]
+  },
+  "timeoutMs": 10000,
+  "requiresElevation": false,
+  "preHook": "backup_target",
+  "postHook": "verify_deleted"
+}
