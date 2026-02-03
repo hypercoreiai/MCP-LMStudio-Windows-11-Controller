@@ -1,0 +1,46 @@
+{
+  "name": "mcp-win11-desktop",
+  "version": "1.0.0",
+  "description": "MCP server for full Windows 11 desktop control via OpenAI-compatible tool protocol",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "dist/core/server.js",
+  "types": "./dist/core/server.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/core/server.js",
+    "start:stdio": "npm run build && node dist/core/server.js --transport stdio",
+    "start:http": "npm run build && node dist/core/server.js --transport http",
+    "start:sse": "npm run build && node dist/core/server.js --transport sse",
+    "dev": "ts-node --project tsconfig.json src/core/server.ts",
+    "dev:stdio": "ts-node --project tsconfig.json src/core/server.ts --transport stdio",
+    "lint": "eslint src/**/*.ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@qwen-code/qwen-code": "^0.8.2",
+    "ajv": "^8.17.0",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "pino": "^9.6.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.5",
+    "eslint": "^9.16.0",
+    "ts-node": "^10.5.0",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "notes": [
+    "ffi-napi is intentionally omitted from package.json.",
+    "It requires native compilation on the target Windows machine.",
+    "Install manually: npm install ffi-napi",
+    "The tools that need it (input_handler) will gracefully degrade",
+    "to PowerShell fallback if the native addon is unavailable."
+  ]
+}
