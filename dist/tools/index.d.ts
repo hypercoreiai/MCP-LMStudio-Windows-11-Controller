@@ -23,4 +23,5 @@ import './memory_manager';
 import './agent_orchestrator';
 import './virtual_desktop_manager';
 import './shell_executor';
+import './firefox_bridge';
 //# sourceMappingURL=index.d.ts.map

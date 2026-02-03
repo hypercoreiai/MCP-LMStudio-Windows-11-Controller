@@ -25,4 +25,5 @@ require("./memory_manager");
 require("./agent_orchestrator");
 require("./virtual_desktop_manager");
 require("./shell_executor");
+require("./firefox_bridge");
 //# sourceMappingURL=index.js.map

@@ -474,98 +474,50 @@ async function callLLM(messages: LLMMessage[], tools: OpenAIFunctionSchema[]): P
 // ---------------------------------------------------------------------------
 
 const SYSTEM_PROMPT = `
-You are a strategic planning AI that converts natural language task requests into detailed, step-by-step execution strategies for Windows 11 desktop automation. 
+# MASTER AUTOMATION ARCHITECT: FIREFOX DOMAIN STRATEGY
+You are the planner for a Windows 11 agent. You MUST follow these architectural rules or the strategy will CRASH.
 
-Your role is NOT to execute tools directly, but to generate a clear plan that a local LLM can follow using available MCP tools.
+## 🛑 THE LETHAL ERROR: NATIVE UI ON WEBSITES
+Native Windows UI tools (ui.list_elements, ui.get_element, etc.) are **STRUCTURALLY BLIND** to website content.
+- If you use 'ui.list_elements' on a browser window, you get 0 elements.
+- If you use 'ui.get_element' on a web button, it returns PATH_NOT_FOUND.
+- This is because Firefox/Chrome use custom rendering engines that bypass the Windows Accessibility API.
 
-## Your Task
+### ⚓ THE "WEB-VISION" PROTOCOL (MANDATORY)
+To interact with a website (e.g., bank, search engine, login form, twitter/X):
+1. **NAVIGATE**: Use 'internet.fetch' or 'internet.search'.
+2. **SEE**: Use 'firefox.get_elements' with a CSS selector (e.g., "input[type='password']", "button[aria-label='Like']"). 
+   - This is the ONLY tool that sees site elements and interactive buttons.
+   - Use it to find coordinates for ANY action (liking, commenting, clicking).
+3. **CLICK/TYPE**:
+   - Get [x, y] from 'firefox.get_elements'.
+   - Use 'input.mouse_click' or 'input.type_into_element' using those EXACT coordinates.
 
-Given a user request, generate a detailed strategy document with:
+## 🦅 COMPLEX SOCIAL INTERACTIONS (LIKING/COMMENTING)
+You can perform ANY action on a website (Twitter/X, Facebook, etc.) by finding the button's coordinates first.
+- To **Like a tweet**: Find the "Like" button using 'firefox.get_elements' -> click coordinates.
+- To **Comment/Reply**: Find the reply field -> click coordinates -> 'input.type'.
+- To **Upvote**: Find the upvote arrow -> click coordinates.
 
-1. **Task Analysis**: What the user wants to accomplish
-2. **Step-by-Step Plan**: Sequential instructions the local LLM should follow
-3. **Tool Recommendations**: Which specific tools to use for each step
-4. **Expected Outcomes**: What should happen at each step
-5. **Error Handling**: Alternative approaches if a step fails
+### ❌ FORBIDDEN COMBINATIONS
+- Browser + ui.list_elements = CRITICAL FAILURE
+- Website + ui.get_element = CRITICAL FAILURE
+- Firefox + ui.click_element = CRITICAL FAILURE
 
-## Available Tool Categories
+### ✅ ALLOWED COMBINATIONS
+- Browser + firefox.get_elements = SUCCESS
+- Browser + internet.scrape = SUCCESS
+- Native App (Notepad/Calc) + ui.list_elements = SUCCESS
 
-**Window Management**: window.list, window.focus, window.move, window.resize, window.close, window.snap, window.minimize, window.maximize, window.restore
-**File Operations**: file.read, file.write, file.copy, file.move, file.delete, file.list, file.search, file.open, file.properties
-**Process Control**: process.list, process.start, process.kill, process.wait, process.run
-**Input Simulation**: input.type, input.key, input.mouse_click, input.mouse_drag, input.mouse_scroll, input.hotkey
-**Clipboard**: clipboard.get, clipboard.set, clipboard.clear
-**Display**: display.list, display.screenshot, display.set_resolution, display.set_dpi, display.set_brightness
-**Registry**: registry.read, registry.write, registry.delete, registry.list, registry.export
-**System Info**: system.info, system.cpu, system.memory, system.disk, system.network, system.battery, system.services
-**Internet**: internet.fetch, internet.search, internet.scrape, internet.scrape.visual
-**UI Automation**: ui.list_elements, ui.get_element, ui.click_element, ui.type_into_element
-**Memory**: memory.save, memory.load, memory.list, memory.delete
-**Virtual Desktop**: vdm.create, vdm.remove, vdm.switch, vdm.list
-**Shell**: shell.execute
-
-## Output Format
-
-Provide your strategy in this structure:
-
-### TASK: [Brief description of what needs to be accomplished]
-
+## OUTPUT FORMAT
+### TASK: [Task Summary]
 ### STRATEGY:
-Step 1: [Action description]
+Step 1: [Action]
 - Tool: [tool.name]
-- Parameters: { "key": "value" }
-- Expected Result: [What should happen]
-
-Step 2: [Action description]
-- Tool: [tool.name]
-- Parameters: { "key": "value" }
-- Expected Result: [What should happen]
-
-[Continue for all steps...]
-
-### ALTERNATIVES:
-- If [specific condition], then [alternative approach]
-
+- Parameters: { ... }
+...
 ### SUCCESS CRITERIA:
-[How to verify the task completed successfully]
-
-## Example
-
-User Request: "Open Notepad and write a short story"
-
-### TASK: Launch Notepad application and enter creative text content
-
-### STRATEGY:
-Step 1: Launch Notepad application
-- Tool: process.start
-- Parameters: { "command": "notepad.exe" }
-- Expected Result: Notepad window appears in foreground
-
-Step 2: Wait for application to be ready
-- Tool: process.wait
-- Parameters: { "processName": "notepad", "timeout": 5000 }
-- Expected Result: Notepad is fully loaded and responsive
-
-Step 3: Focus Notepad window
-- Tool: window.focus
-- Parameters: { "title": "Untitled - Notepad" }
-- Expected Result: Notepad becomes active window
-
-Step 4: Type the story content
-- Tool: input.type
-- Parameters: { "text": "Once upon a time in a digital realm, an AI learned to help humans accomplish their tasks with precision and care. The end." }
-- Expected Result: Text appears in Notepad
-
-### ALTERNATIVES:
-- If Notepad doesn't launch, use process.run with full path: C:\\Windows\\System32\\notepad.exe
-- If window focus fails, use input.hotkey with "Alt+Tab" to cycle to Notepad
-
-### SUCCESS CRITERIA:
-- Notepad application is running (visible in process.list)
-- Story text is visible in the Notepad window
-- No error messages or crashes occurred
-
-Remember: You are generating instructions for another AI to follow, not executing them yourself. Be specific, clear, and comprehensive in your planning.
+[Confirmation steps]
 `;
 
 // ---------------------------------------------------------------------------
@@ -573,7 +525,7 @@ Remember: You are generating instructions for another AI to follow, not executin
 // ---------------------------------------------------------------------------
 
 async function handleAgentExecuteQuery(args: Record<string, unknown>): Promise<ToolResult> {
-  const query = args.query as string;
+  const query = (args.query as string).toLowerCase();
 
   if (!query) {
     throw new ExecutionError('agent_orchestrator', 'Query is required');
@@ -581,17 +533,112 @@ async function handleAgentExecuteQuery(args: Record<string, unknown>): Promise<T
 
   log.info({ query }, 'Generating strategy for query');
 
-  // Build context about available tools
+  // SMART FILTER: Detect if this is likely a browser/web task
+  const isWebTask = query.includes('http') || 
+                    query.includes('www.') || 
+                    query.includes('website') || 
+                    query.includes('url') || 
+                    query.includes('bank') || 
+                    query.includes('login') || 
+                    query.includes('sign in') ||
+                    query.includes('search') ||
+                    query.includes('internet') ||
+                    query.includes('browser') ||
+                    query.includes('firefox') ||
+                    query.includes('chrome') ||
+                    query.includes('twitter') ||
+                    query.includes(' x ') ||
+                    query.includes('x.com') ||
+                    query.includes('facebook') ||
+                    query.includes('reddit') ||
+                    query.includes('social media');
+
+  // Build context about available tools with explicit categorization
   const allTools = registry.list();
-  const toolList = allTools.map(t => `- ${t.name}: ${t.description}`).join('\n');
+  
+  const browserTools = allTools.filter(t => t.name.startsWith('firefox.') || t.name.startsWith('internet.'));
+  const windowTools = allTools.filter(t => t.name.startsWith('window.'));
+  const nativeUiTools = allTools.filter(t => t.name.startsWith('ui.'));
+  const inputTools = allTools.filter(t => t.name.startsWith('input.'));
+  const otherTools = allTools.filter(t => 
+    !t.name.startsWith('firefox.') && 
+    !t.name.startsWith('internet.') && 
+    !t.name.startsWith('ui.') && 
+    !t.name.startsWith('window.') &&
+    !t.name.startsWith('input.')
+  );
+
+  log.info({ 
+    isWebTask,
+    browserToolCount: browserTools.length, 
+    nativeUiCount: nativeUiTools.length 
+  }, 'Tools categorized for agent');
+
+  // PHYSICAL LOGGING FOR DEBUGGING
+  if (isWebTask) {
+    console.log(`[AGENT] Web Task Detected: "${query}"`);
+  }
+
+  // Helper to format tools for the text prompt
+  const formatTool = (t: OpenAIFunctionSchema) => {
+    const params = Object.keys(t.parameters.properties || {}).join(', ');
+    return `- ${t.name}(${params}): ${t.description}`;
+  };
+
+  let toolList = [
+    "=== CATEGORY A: WEBPAGE INTERACTION (MANDATORY FOR SITE CONTENT) ===",
+    ...browserTools.map(formatTool),
+    
+    "\n=== CATEGORY B: WINDOW MANAGEMENT (FOR FINDING THE BROWSER WINDOW) ===",
+    ...windowTools.map(formatTool),
+
+    "\n=== CATEGORY C: GLOBAL INPUT (FOR TYPING/CLICKING COORDINATES) ===",
+    ...inputTools.map(formatTool),
+
+    "\n=== CATEGORY D: SYSTEM UTILITIES ===",
+    ...otherTools.map(formatTool)
+  ];
+
+  // If it's a web task, we aggressively warn or even hide native UI tools
+  if (isWebTask) {
+    toolList.push("\n### 🛑 ARCHITECTURAL BLOCKER: NATIVE UI TOOLS REMOVED ###");
+    toolList.push("The 'ui.*' tools (like ui.list_elements) have been PHYSICALLY REMOVED from the available toolset for this task because they cannot see inside browsers.");
+    toolList.push("YOU MUST USE 'firefox.get_elements' to find coordinates on websites.");
+    // We don't even map the native tools here anymore
+  } else {
+    toolList.push("\n=== CATEGORY E: NATIVE UI TOOLS (ONLY FOR LOCAL WINDOWS APPS) ===");
+    toolList.push(...nativeUiTools.map(formatTool));
+  }
+
+  const toolListStr = toolList.join('\n');
 
   const messages: LLMMessage[] = [
     { role: 'system', content: SYSTEM_PROMPT },
-    { role: 'user', content: `Available Tools:\n${toolList}\n\nUser Request: ${query}\n\nPlease generate a detailed execution strategy.` },
+    { role: 'user', content: `Task: ${query}\n\nList of Available Tools:\n${toolListStr}\n\nRemember: If you need to "see" a button on a website, you MUST use firefox.get_elements to get its [x,y], then input.mouse_click to click it. ui.get_element will FAIL.` },
   ];
 
-  // Call LLM to generate strategy (without tool definitions - we don't want it to make tool calls)
-  const { content } = await callLLM(messages, []);
+  // Call LLM to generate strategy
+  let { content } = await callLLM(messages, []);
+
+  // HARD ENFORCEMENT: Loop up to 2 times to strip out hallucinations
+  let retryCount = 0;
+  while (retryCount < 2 && isWebTask && /ui\.(list_elements|get_element|click_element|type_into_element|wait_for_element)/i.test(content)) {
+    console.log(`[AGENT] Detected UI tool hallucination in web task. Attempting correction ${retryCount + 1}...`);
+    log.warn({ retryCount, content: content.substring(0, 500) }, 'LLM hallucinated native UI tools for a web task. Retrying with explicit correction.');
+    
+    const retryMessages: LLMMessage[] = [
+      ...messages,
+      { role: 'assistant', content: content },
+      { 
+        role: 'user', 
+        content: "CRITICAL REJECTION: Your strategy uses 'ui.*' tools (like ui.list_elements). These tools CANNOT see inside the browser. They will fail. You MUST rewrite the entire strategy using 'firefox.get_elements' to find coordinates, and 'input.mouse_click' or 'input.type_into_element' to interact with the page. Coordinates are the only way. Do not use any 'ui.' tools."
+      }
+    ];
+    
+    const retryResult = await callLLM(retryMessages, []);
+    content = retryResult.content;
+    retryCount++;
+  }
 
   log.info('Strategy generated successfully');
 

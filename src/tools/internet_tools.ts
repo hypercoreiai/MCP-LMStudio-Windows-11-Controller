@@ -159,7 +159,7 @@ async function callProcessStart(url: string): Promise<ToolResult> {
     tool: 'process.start',
     args: {
       executable: 'C:\\Program Files\\Mozilla Firefox\\firefox.exe',
-      arguments: [url]
+      arguments: ['--remote-debugging-port=9222', url]
     },
     meta: {
       rawOutput: '',
